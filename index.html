@@ -1,0 +1,681 @@
+<title>분수 놀이터 — 윤오랑 분수 배우기</title>
+<style>
+  :root{
+    --berry:#FF4E86;      /* 라즈베리 핑크 (메인 액센트) */
+    --tangerine:#FF9F1C;  /* 귤 오렌지 (피자) */
+    --grape:#8A63D2;      /* 포도 보라 */
+    --mint:#17C3A2;       /* 민트 (정답/성공) */
+    --sky:#38B6FF;        /* 하늘 (물음/버튼) */
+    --cream:#FFF6EC;      /* 따뜻한 배경 */
+    --card:#FFFFFF;
+    --ink:#3B2E3A;        /* 자두빛 진한 글자 */
+    --soft:#8B7C88;       /* 부드러운 회보라 */
+    --line:#F0E4DA;
+    --shadow:rgba(74,46,64,.14);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --cream:#241A2B; --card:#2E2338; --ink:#FBEFF6; --soft:#B9A8C4;
+      --line:#3D3049; --shadow:rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --cream:#241A2B; --card:#2E2338; --ink:#FBEFF6; --soft:#B9A8C4;
+    --line:#3D3049; --shadow:rgba(0,0,0,.4);
+  }
+  :root[data-theme="light"]{
+    --cream:#FFF6EC; --card:#FFFFFF; --ink:#3B2E3A; --soft:#8B7C88;
+    --line:#F0E4DA; --shadow:rgba(74,46,64,.14);
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo",system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 500px at 15% -10%, rgba(255,159,28,.18), transparent 60%),
+      radial-gradient(1000px 500px at 110% 0%, rgba(255,78,134,.16), transparent 55%),
+      var(--cream);
+    color:var(--ink);
+    min-height:100vh;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:18px 16px 90px;}
+
+  /* ===== 상단 진행바 ===== */
+  .topbar{
+    position:sticky; top:0; z-index:30;
+    display:flex; align-items:center; gap:10px;
+    padding:10px 4px; margin-bottom:6px;
+    backdrop-filter:blur(8px);
+    background:linear-gradient(var(--cream), rgba(0,0,0,0));
+  }
+  .brand{font-weight:800; font-size:16px; letter-spacing:-.02em; white-space:nowrap;}
+  .brand b{color:var(--berry);}
+  .dots{display:flex; gap:7px; margin-left:auto;}
+  .dot{width:11px; height:11px; border-radius:50%; background:var(--line); transition:.3s;}
+  .dot.on{background:var(--berry); transform:scale(1.25);}
+  .dot.done{background:var(--mint);}
+  .sound-btn{
+    border:none; background:var(--card); color:var(--ink);
+    width:40px; height:40px; border-radius:14px; font-size:18px; cursor:pointer;
+    box-shadow:0 4px 12px var(--shadow); display:grid; place-items:center;
+  }
+
+  /* ===== 스테이지 카드 ===== */
+  .stage{
+    background:var(--card); border-radius:28px; padding:24px 20px 26px;
+    box-shadow:0 18px 40px var(--shadow);
+    display:none; animation:pop .45s cubic-bezier(.2,1.1,.3,1);
+  }
+  .stage.show{display:block;}
+  @keyframes pop{from{opacity:0; transform:translateY(24px) scale(.97);} to{opacity:1; transform:none;}}
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:13px; font-weight:800; letter-spacing:.02em;
+    color:#fff; background:var(--grape);
+    padding:6px 13px; border-radius:999px; margin-bottom:12px;
+  }
+  h1{font-size:clamp(26px,7vw,38px); margin:2px 0 4px; letter-spacing:-.03em; text-wrap:balance; line-height:1.15;}
+  h1 em{font-style:normal; color:var(--berry);}
+  .lead{font-size:17px; color:var(--soft); margin:0 0 18px; text-wrap:balance;}
+
+  /* 나레이션 재생 버튼 */
+  .play{
+    display:inline-flex; align-items:center; gap:10px;
+    border:none; cursor:pointer; font-family:inherit;
+    background:linear-gradient(135deg,var(--sky),var(--grape)); color:#fff;
+    font-weight:800; font-size:16px; padding:12px 20px; border-radius:16px;
+    box-shadow:0 8px 20px rgba(56,182,255,.35); margin-bottom:18px;
+    transition:transform .15s;
+  }
+  .play:active{transform:scale(.95);}
+  .play .ico{font-size:15px;}
+  .play.speaking{animation:pulse 1s ease-in-out infinite;}
+  @keyframes pulse{50%{box-shadow:0 8px 30px rgba(138,99,210,.6);}}
+
+  .demo{
+    background:linear-gradient(180deg, rgba(255,159,28,.08), rgba(255,78,134,.06));
+    border:2px dashed var(--line);
+    border-radius:22px; padding:22px 16px; text-align:center; margin-bottom:18px;
+  }
+  svg{max-width:100%; height:auto; display:block; margin:0 auto;}
+
+  /* 분수 표기 */
+  .frac{display:inline-flex; flex-direction:column; align-items:center; line-height:1;
+    font-weight:900; vertical-align:middle; margin:0 4px;}
+  .frac .num{padding:0 6px;}
+  .frac .den{padding:0 6px;}
+  .frac .bar{width:100%; height:4px; background:currentColor; border-radius:3px; margin:4px 0;}
+  .fbig{font-size:44px;}
+  .fmid{font-size:30px;}
+
+  .eq{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+    font-size:30px; font-weight:900; margin:8px 0;}
+  .eq .op{color:var(--soft);}
+
+  /* 컨트롤 */
+  .controls{display:flex; flex-direction:column; gap:16px;}
+  .ctl label{font-weight:800; font-size:15px; display:flex; justify-content:space-between; margin-bottom:6px;}
+  .ctl label span{color:var(--berry);}
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; width:100%; height:14px; border-radius:99px;
+    background:var(--line); outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:32px; height:32px; border-radius:50%;
+    background:var(--berry); border:4px solid #fff; box-shadow:0 3px 8px var(--shadow); cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:28px; height:28px; border-radius:50%; background:var(--berry);
+    border:4px solid #fff; box-shadow:0 3px 8px var(--shadow); cursor:pointer;
+  }
+
+  .readout{text-align:center; font-size:19px; font-weight:800; margin-top:14px;}
+  .readout .hi{color:var(--berry);}
+
+  .tip{
+    background:rgba(23,195,162,.12); border-left:6px solid var(--mint);
+    border-radius:0 14px 14px 0; padding:13px 16px; font-size:15px; font-weight:700;
+    margin-top:16px; color:var(--ink);
+  }
+  .tip b{color:var(--mint);}
+
+  .action{
+    border:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:17px;
+    color:#fff; background:var(--tangerine); padding:14px 22px; border-radius:16px;
+    box-shadow:0 8px 20px rgba(255,159,28,.4); transition:transform .15s; width:100%;
+  }
+  .action:active{transform:scale(.96);}
+  .action.reset{background:var(--soft); box-shadow:none; font-size:14px; padding:10px; width:auto; margin:0 auto; display:block;}
+
+  /* 하단 이동 */
+  .nav{display:flex; gap:12px; margin-top:22px;}
+  .nav button{
+    flex:1; border:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:17px;
+    padding:15px; border-radius:18px; transition:transform .15s;
+  }
+  .nav button:active{transform:scale(.96);}
+  .next{background:var(--berry); color:#fff; box-shadow:0 8px 20px rgba(255,78,134,.4);}
+  .prev{background:var(--card); color:var(--soft); box-shadow:0 4px 12px var(--shadow); flex:0 0 90px;}
+  .next:disabled{opacity:.4; filter:grayscale(.5);}
+
+  /* 퀴즈 */
+  .quiz-q{font-size:20px; font-weight:800; text-align:center; margin:6px 0 16px; text-wrap:balance;}
+  .choices{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .choice{
+    border:3px solid var(--line); background:var(--card); color:var(--ink);
+    border-radius:18px; padding:18px 10px; cursor:pointer; font-family:inherit;
+    display:grid; place-items:center; gap:6px; transition:transform .12s,border-color .2s;
+  }
+  .choice:active{transform:scale(.96);}
+  .choice.correct{border-color:var(--mint); background:rgba(23,195,162,.15);}
+  .choice.wrong{border-color:var(--berry); background:rgba(255,78,134,.12); animation:shake .4s;}
+  @keyframes shake{25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+  .qfeed{text-align:center; font-weight:800; font-size:18px; min-height:26px; margin-top:14px;}
+  .qprog{text-align:center; color:var(--soft); font-weight:700; margin-bottom:10px;}
+
+  /* 시작 화면 */
+  .start{text-align:center; padding:36px 20px;}
+  .start h1{font-size:clamp(30px,9vw,46px);}
+  .mascot{font-size:78px; margin:6px 0; animation:bob 2.4s ease-in-out infinite;}
+  @keyframes bob{50%{transform:translateY(-12px) rotate(-4deg);}}
+  .start .play{margin-top:6px; font-size:20px; padding:16px 30px;}
+
+  /* 완료 화면 */
+  .done{text-align:center; padding:30px 16px;}
+  .done .mascot{font-size:70px;}
+  .badge{font-size:22px; font-weight:900; color:var(--mint); margin:8px 0;}
+
+  canvas#confetti{position:fixed; inset:0; pointer-events:none; z-index:50;}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important; transition:none!important;}
+  }
+</style>
+
+<canvas id="confetti"></canvas>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">🍕 <b>분수</b> 놀이터</div>
+    <div class="dots" id="dots"></div>
+    <button class="sound-btn" id="soundToggle" title="소리 켜기/끄기">🔊</button>
+  </div>
+
+  <!-- ===== 시작 ===== -->
+  <section class="stage show" data-stage="0">
+    <div class="start">
+      <div class="mascot">🍕</div>
+      <div class="eyebrow">🎈 4학년 수학 · 분수</div>
+      <h1>윤오야,<br><em>분수 놀이터</em>에 온 걸 환영해!</h1>
+      <p class="lead">피자랑 초콜릿을 나눠 먹으면서<br>분수 더하기·빼기를 배워보자. 재밌을걸? 😎</p>
+      <button class="play" data-say="greet"><span class="ico">▶</span> 시작할래! (소리 켜기)</button>
+      <p style="font-size:13px;color:var(--soft);margin-top:8px">버튼을 누르면 목소리 설명이 나와요 🔊</p>
+    </div>
+  </section>
+
+  <!-- ===== 1. 분수란 ===== -->
+  <section class="stage" data-stage="1">
+    <div class="eyebrow">STAGE 1</div>
+    <h1>분수가 <em>뭐야?</em></h1>
+    <p class="lead">피자 한 판을 똑같이 나눠보면 알 수 있어!</p>
+    <button class="play" data-say="s1"><span class="ico">▶</span> 설명 들어보기</button>
+
+    <div class="demo">
+      <div id="pizza1"></div>
+      <div class="readout" style="margin-top:16px">
+        피자를 <span class="hi">4조각</span>으로 나눠서,<br>그중 <span class="hi">3조각</span>을 먹었어!
+      </div>
+      <div class="eq" style="margin-top:14px">
+        =
+        <span class="frac fbig" style="color:var(--berry)">
+          <span class="num">3</span><span class="bar"></span><span class="den">4</span>
+        </span>
+        <span style="font-size:17px;color:var(--soft);font-weight:800">"4분의 3"</span>
+      </div>
+    </div>
+
+    <div class="tip">
+      🔑 <b>아래 숫자(분모)</b>는 <b>몇 조각으로 나눴나</b>,
+      <b>위 숫자(분자)</b>는 <b>그중 몇 조각인가</b>를 뜻해!
+    </div>
+  </section>
+
+  <!-- ===== 2. 직접 만져보기 ===== -->
+  <section class="stage" data-stage="2">
+    <div class="eyebrow">STAGE 2 · 직접 해보기</div>
+    <h1>네가 직접 <em>나눠봐!</em></h1>
+    <p class="lead">막대를 움직이면 피자랑 분수가 바뀌어. 놀아봐! 🎮</p>
+    <button class="play" data-say="s2"><span class="ico">▶</span> 어떻게 하는지 듣기</button>
+
+    <div class="demo">
+      <div id="pizza2"></div>
+      <div class="eq" style="margin-top:6px">
+        <span class="frac fbig" style="color:var(--berry)">
+          <span class="num" id="p2num">3</span><span class="bar"></span><span class="den" id="p2den">4</span>
+        </span>
+      </div>
+      <div class="readout" id="p2read"></div>
+    </div>
+
+    <div class="controls">
+      <div class="ctl">
+        <label>몇 조각으로 나눌까? <span id="denLbl">4조각</span></label>
+        <input type="range" id="denSlider" min="2" max="8" value="4">
+      </div>
+      <div class="ctl">
+        <label>몇 조각 먹을까? <span id="numLbl">3조각</span></label>
+        <input type="range" id="numSlider" min="0" max="4" value="3">
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 더하기 ===== -->
+  <section class="stage" data-stage="3">
+    <div class="eyebrow">STAGE 3 · 더하기</div>
+    <h1>분수 <em>더하기</em> ➕</h1>
+    <p class="lead">초콜릿 <span style="color:var(--berry);font-weight:800">2조각 + 1조각</span>을 합치면?</p>
+    <button class="play" data-say="s3"><span class="ico">▶</span> 설명 들어보기</button>
+
+    <div class="demo">
+      <div id="choc3"></div>
+      <div class="eq" style="margin-top:16px" id="eq3">
+        <span class="frac fmid" style="color:var(--tangerine)"><span class="num">2</span><span class="bar"></span><span class="den">5</span></span>
+        <span class="op">+</span>
+        <span class="frac fmid" style="color:var(--grape)"><span class="num">1</span><span class="bar"></span><span class="den">5</span></span>
+        <span class="op">=</span>
+        <span class="frac fmid" id="ans3" style="color:var(--soft)"><span class="num">?</span><span class="bar"></span><span class="den">?</span></span>
+      </div>
+      <button class="action" id="btnAdd">🍫 합쳐보기!</button>
+    </div>
+
+    <div class="tip">
+      🔑 분모가 <b>같으면</b> — <b>분모(5)는 그대로!</b> 두고,
+      <b>분자만 2 + 1 = 3</b> 이렇게 더하면 돼. 참 쉽지? 😄
+    </div>
+  </section>
+
+  <!-- ===== 4. 빼기 ===== -->
+  <section class="stage" data-stage="4">
+    <div class="eyebrow">STAGE 4 · 빼기</div>
+    <h1>분수 <em>빼기</em> ➖</h1>
+    <p class="lead">케이크 <span style="color:var(--berry);font-weight:800">5조각에서 2조각</span>을 먹으면?</p>
+    <button class="play" data-say="s4"><span class="ico">▶</span> 설명 들어보기</button>
+
+    <div class="demo">
+      <div id="cake4"></div>
+      <div class="eq" style="margin-top:16px" id="eq4">
+        <span class="frac fmid" style="color:var(--berry)"><span class="num">5</span><span class="bar"></span><span class="den">6</span></span>
+        <span class="op">−</span>
+        <span class="frac fmid" style="color:var(--tangerine)"><span class="num">2</span><span class="bar"></span><span class="den">6</span></span>
+        <span class="op">=</span>
+        <span class="frac fmid" id="ans4" style="color:var(--soft)"><span class="num">?</span><span class="bar"></span><span class="den">?</span></span>
+      </div>
+      <button class="action" id="btnSub">🍰 먹어보기!</button>
+    </div>
+
+    <div class="tip">
+      🔑 빼기도 똑같아! <b>분모(6)는 그대로</b> 두고,
+      <b>분자만 5 − 2 = 3</b> 이렇게 빼면 끝! 🎉
+    </div>
+  </section>
+
+  <!-- ===== 5. 퀴즈 ===== -->
+  <section class="stage" data-stage="5">
+    <div class="eyebrow">STAGE 5 · 도전!</div>
+    <h1>직접 <em>풀어보기</em> ✏️</h1>
+    <p class="lead">이제 윤오 차례! 3문제 도전해보자 💪</p>
+    <button class="play" data-say="s5"><span class="ico">▶</span> 문제 읽어주기</button>
+
+    <div class="demo" style="text-align:left">
+      <div class="qprog" id="qprog">문제 1 / 3</div>
+      <div class="quiz-q" id="quizQ"></div>
+      <div class="choices" id="choices"></div>
+      <div class="qfeed" id="qfeed"></div>
+    </div>
+  </section>
+
+  <!-- ===== 완료 ===== -->
+  <section class="stage" data-stage="6">
+    <div class="done">
+      <div class="mascot">🏆</div>
+      <div class="badge" id="scoreLine">참 잘했어요!</div>
+      <h1>윤오, <em>분수 마스터!</em></h1>
+      <p class="lead">분모는 그대로, 분자만 더하고 빼기!<br>이제 우공비 문제도 척척 풀 수 있을 거야 😎</p>
+      <button class="action" id="btnAgain" style="max-width:260px;margin:0 auto">🔄 처음부터 다시</button>
+    </div>
+  </section>
+
+  <!-- ===== 이동 버튼 ===== -->
+  <div class="nav" id="nav" style="display:none">
+    <button class="prev" id="prevBtn">◀</button>
+    <button class="next" id="nextBtn">다음 ▶</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var TOTAL = 6; // 0시작 ~ 6완료
+  var cur = 0;
+  var soundOn = true;
+
+  /* ---------- 색상 ---------- */
+  function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+  /* ---------- 음성(나레이션) ---------- */
+  var voice = null;
+  function pickVoice(){
+    var vs = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+    var ko = vs.filter(function(v){ return /ko/i.test(v.lang); });
+    // 자연스러운 순서로 우선순위
+    var pref = ["Google","Yuna","Heami","SunHi","Nara"];
+    for(var i=0;i<pref.length;i++){
+      var f = ko.find(function(v){ return v.name.indexOf(pref[i])>=0; });
+      if(f){ voice = f; return; }
+    }
+    if(ko[0]) voice = ko[0];
+  }
+  if(window.speechSynthesis){
+    pickVoice();
+    speechSynthesis.onvoiceschanged = pickVoice;
+  }
+
+  var SCRIPT = {
+    greet:"안녕 윤오야! 나는 피자 요정이야. 오늘은 나랑 같이 분수를 배워볼 거야. 피자랑 초콜릿을 나눠 먹으면서 하면 하나도 안 어렵거든? 자, 출발해 볼까!",
+    s1:"자 이 피자를 봐. 똑같이 네 조각으로 나눴지? 이렇게 나눈 조각 수, 네 개를 아래에 쓰고, 우리가 먹은 세 조각을 위에 써. 그럼 사분의 삼, 이렇게 읽는 거야. 아래 숫자는 몇 조각으로 나눴나, 위 숫자는 그중에 몇 조각인가! 이게 바로 분수야.",
+    s2:"이번엔 네가 직접 해볼 차례야. 아래 막대를 손가락으로 움직여 봐. 첫 번째 막대는 피자를 몇 조각으로 나눌지, 두 번째 막대는 몇 조각을 먹을지 정하는 거야. 움직일 때마다 피자랑 분수가 짠 하고 바뀔 거야. 마음껏 놀아 봐!",
+    s3:"이제 분수를 더해 보자. 초콜릿 오분의 이 조각이랑, 오분의 일 조각을 합칠 거야. 여기서 제일 중요한 비밀! 분모가 똑같이 오일 때는, 아래 오는 그대로 두고, 위에 있는 숫자만 이 더하기 일, 삼! 이렇게 더하면 돼. 합쳐보기 버튼을 눌러 봐!",
+    s4:"빼기도 아주 쉬워. 케이크 육분의 오에서 두 조각을 먹어 볼 거야. 더하기랑 똑같이, 아래 육은 그대로 두고, 위에 있는 숫자만 오 빼기 이, 삼! 이렇게 빼면 끝이야. 먹어보기 버튼을 눌러서 확인해 봐!",
+    s5:"자 이제 진짜 실력 테스트! 세 문제를 낼 거야. 잘 생각하고 정답을 골라 봐. 틀려도 괜찮아, 다시 해보면 되니까. 준비됐지? 파이팅!"
+  };
+
+  var curUtter = null;
+  function speak(key, btn){
+    if(!soundOn || !window.speechSynthesis) return;
+    var text = typeof key==="string" && SCRIPT[key] ? SCRIPT[key] : key;
+    if(!text) return;
+    speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "ko-KR";
+    if(voice) u.voice = voice;
+    u.rate = 1.04; u.pitch = 1.6; u.volume = 1; // 높은 음 = 귀엽고 밝은 아이 톤
+    if(btn){
+      btn.classList.add("speaking");
+      u.onend = u.onerror = function(){ btn.classList.remove("speaking"); };
+    }
+    curUtter = u;
+    // 약간의 지연 — 일부 브라우저에서 첫 발화 씹힘 방지
+    setTimeout(function(){ speechSynthesis.speak(u); }, 60);
+  }
+  function stopSpeak(){ if(window.speechSynthesis) speechSynthesis.cancel();
+    document.querySelectorAll('.play.speaking').forEach(function(b){b.classList.remove('speaking');}); }
+
+  /* ---------- 피자 SVG ---------- */
+  function drawPizza(el, slices, eaten, colorEaten){
+    var size=200, r=88, cx=100, cy=100;
+    var svg='<svg viewBox="0 0 200 200" width="220" role="img" aria-label="피자 '+slices+'조각 중 '+eaten+'조각">';
+    // 접시
+    svg+='<circle cx="100" cy="100" r="96" fill="rgba(0,0,0,.04)"/>';
+    for(var i=0;i<slices;i++){
+      var a0=(i/slices)*2*Math.PI - Math.PI/2;
+      var a1=((i+1)/slices)*2*Math.PI - Math.PI/2;
+      var x0=cx+r*Math.cos(a0), y0=cy+r*Math.sin(a0);
+      var x1=cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1);
+      var big = (a1-a0)>Math.PI?1:0;
+      var fill = i<eaten ? colorEaten : "#FFE6B0";
+      var path = slices===1
+        ? '<circle cx="100" cy="100" r="'+r+'" fill="'+fill+'" stroke="#fff" stroke-width="3"/>'
+        : '<path d="M'+cx+','+cy+' L'+x0.toFixed(1)+','+y0.toFixed(1)+
+          ' A'+r+','+r+' 0 '+big+' 1 '+x1.toFixed(1)+','+y1.toFixed(1)+' Z" fill="'+fill+'" stroke="#fff" stroke-width="3"/>';
+      svg+=path;
+      // 페퍼로니 점 (먹은 칸)
+      if(i<eaten){
+        var am=(a0+a1)/2, pr=r*0.55;
+        svg+='<circle cx="'+(cx+pr*Math.cos(am)).toFixed(1)+'" cy="'+(cy+pr*Math.sin(am)).toFixed(1)+'" r="6" fill="rgba(255,255,255,.55)"/>';
+      }
+    }
+    svg+='</svg>';
+    el.innerHTML=svg;
+  }
+
+  /* ---------- 초콜릿/케이크 바 ---------- */
+  function drawBar(el, total, filledArr){
+    // filledArr: 각 칸 색상 or null
+    var w=320, h=70, gap=6, pad=6;
+    var cw=(w-pad*2-gap*(total-1))/total;
+    var svg='<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="max-width:340px">';
+    svg+='<rect x="0" y="0" width="'+w+'" height="'+h+'" rx="14" fill="rgba(0,0,0,.05)"/>';
+    for(var i=0;i<total;i++){
+      var x=pad+i*(cw+gap);
+      var c=filledArr[i];
+      svg+='<rect x="'+x.toFixed(1)+'" y="'+pad+'" width="'+cw.toFixed(1)+'" height="'+(h-pad*2)+'" rx="8" fill="'+(c||"#F0E4DA")+'" stroke="#fff" stroke-width="2">';
+      svg+='</rect>';
+    }
+    svg+='</svg>';
+    el.innerHTML=svg;
+  }
+
+  /* ---------- 스테이지별 렌더 ---------- */
+  function renderStage(n){
+    if(n===1){ drawPizza(document.getElementById('pizza1'),4,3,css('--tangerine')); }
+    if(n===2){ updateP2(); }
+    if(n===3){ resetAdd(); }
+    if(n===4){ resetSub(); }
+    if(n===5){ startQuiz(); }
+  }
+
+  /* --- Stage2 인터랙티브 --- */
+  var denS=document.getElementById('denSlider'), numS=document.getElementById('numSlider');
+  function readNum(k){
+    return {1:"일",2:"이",3:"삼",4:"사",5:"오",6:"육",7:"칠",8:"팔",0:"영"}[k]||k;
+  }
+  function updateP2(){
+    var den=+denS.value; var num=Math.min(+numS.value,den);
+    numS.max=den; if(+numS.value>den){numS.value=den; num=den;}
+    document.getElementById('denLbl').textContent=den+"조각";
+    document.getElementById('numLbl').textContent=num+"조각";
+    drawPizza(document.getElementById('pizza2'),den,num,css('--berry'));
+    document.getElementById('p2num').textContent=num;
+    document.getElementById('p2den').textContent=den;
+    document.getElementById('p2read').innerHTML=
+      '<span class="hi">'+den+'조각</span> 중 <span class="hi">'+num+'조각</span> → "'+readNum(den)+'분의 '+readNum(num)+'"';
+  }
+  if(denS){ denS.addEventListener('input',updateP2); numS.addEventListener('input',updateP2); }
+
+  /* --- Stage3 더하기 --- */
+  function resetAdd(){
+    var arr=[];
+    for(var i=0;i<5;i++) arr.push(i<2?css('--tangerine'):(i<3?css('--grape'):null));
+    drawBar(document.getElementById('choc3'),5,arr);
+    var ans=document.getElementById('ans3');
+    ans.style.color=css('--soft');
+    ans.innerHTML='<span class="num">?</span><span class="bar"></span><span class="den">?</span>';
+    document.getElementById('btnAdd').disabled=false;
+    document.getElementById('btnAdd').textContent='🍫 합쳐보기!';
+  }
+  document.getElementById('btnAdd').addEventListener('click',function(){
+    var arr=[];
+    for(var i=0;i<5;i++) arr.push(i<3?css('--mint'):null);
+    drawBar(document.getElementById('choc3'),5,arr);
+    var ans=document.getElementById('ans3');
+    ans.style.color=css('--mint');
+    ans.innerHTML='<span class="num">3</span><span class="bar"></span><span class="den">5</span>';
+    this.textContent='✅ 오분의 삼!';
+    this.disabled=true;
+    speak("짠! 오분의 삼이 됐지? 분모 오는 그대로, 분자만 이 더하기 일은 삼! 정답이야.");
+    burst();
+  });
+
+  /* --- Stage4 빼기 --- */
+  function resetSub(){
+    var arr=[];
+    for(var i=0;i<6;i++) arr.push(i<5?css('--berry'):null);
+    drawBar(document.getElementById('cake4'),6,arr);
+    var ans=document.getElementById('ans4');
+    ans.style.color=css('--soft');
+    ans.innerHTML='<span class="num">?</span><span class="bar"></span><span class="den">?</span>';
+    document.getElementById('btnSub').disabled=false;
+    document.getElementById('btnSub').textContent='🍰 먹어보기!';
+  }
+  document.getElementById('btnSub').addEventListener('click',function(){
+    var arr=[];
+    for(var i=0;i<6;i++) arr.push(i<3?css('--mint'):null);
+    drawBar(document.getElementById('cake4'),6,arr);
+    var ans=document.getElementById('ans4');
+    ans.style.color=css('--mint');
+    ans.innerHTML='<span class="num">3</span><span class="bar"></span><span class="den">6</span>';
+    this.textContent='✅ 육분의 삼!';
+    this.disabled=true;
+    speak("맞았어! 육분의 삼! 분모 육은 그대로 두고, 분자만 오 빼기 이는 삼! 아주 잘했어.");
+    burst();
+  });
+
+  /* --- Stage5 퀴즈 --- */
+  var QUIZ=[
+    {q:'초콜릿 <b style="color:var(--berry)">1/4 + 2/4</b> 는 얼마일까?',
+     opts:['3/4','3/8','2/4','3/16'], a:0,
+     say:'첫 번째 문제! 사분의 일 더하기 사분의 이는 얼마일까? 분모는 그대로, 분자만 더해봐!'},
+    {q:'피자 <b style="color:var(--berry)">5/6 − 3/6</b> 는 얼마일까?',
+     opts:['2/12','8/6','2/6','2/0'], a:2,
+     say:'두 번째 문제! 육분의 오 빼기 육분의 삼은? 분모 육은 그대로 두고 위에 숫자만 빼봐.'},
+    {q:'젤리 <b style="color:var(--berry)">3/7 + 3/7</b> 는 얼마일까?',
+     opts:['6/14','9/7','6/7','3/7'], a:2,
+     say:'마지막 문제! 칠분의 삼 더하기 칠분의 삼은 얼마일까? 이제 잘 알지?'}
+  ];
+  var qi=0, score=0;
+  function startQuiz(){ qi=0; score=0; showQ(); }
+  function showQ(){
+    var it=QUIZ[qi];
+    document.getElementById('qprog').textContent='문제 '+(qi+1)+' / '+QUIZ.length;
+    document.getElementById('quizQ').innerHTML=it.q;
+    document.getElementById('qfeed').textContent='';
+    var box=document.getElementById('choices'); box.innerHTML='';
+    it.opts.forEach(function(opt,idx){
+      var b=document.createElement('button');
+      b.className='choice';
+      var parts=opt.split('/');
+      b.innerHTML= parts.length===2
+        ? '<span class="frac fmid" style="color:var(--grape)"><span class="num">'+parts[0]+'</span><span class="bar"></span><span class="den">'+parts[1]+'</span></span>'
+        : opt;
+      b.addEventListener('click',function(){ answer(idx,b,it); });
+      box.appendChild(b);
+    });
+    nextBtn.disabled = true;
+  }
+  function answer(idx,btn,it){
+    if(btn.dataset.locked) return;
+    var all=document.querySelectorAll('#choices .choice');
+    if(idx===it.a){
+      btn.classList.add('correct');
+      all.forEach(function(c){c.dataset.locked="1";});
+      document.getElementById('qfeed').style.color=css('--mint');
+      document.getElementById('qfeed').textContent='🎉 정답이야! 최고!';
+      score++;
+      burst();
+      speak("딩동댕! 정답이야! 정말 잘했어.");
+      setTimeout(function(){
+        qi++;
+        if(qi<QUIZ.length){ showQ(); }
+        else { nextBtn.disabled=false; document.getElementById('qfeed').textContent='🏆 다 풀었어! 다음 버튼을 눌러봐!'; }
+      },1400);
+    } else {
+      btn.classList.add('wrong');
+      document.getElementById('qfeed').style.color=css('--berry');
+      document.getElementById('qfeed').textContent='아깝다! 분모는 그대로, 분자만! 다시 골라봐 💪';
+      speak("음, 아쉬워! 분모는 그대로 두고 분자만 계산하는 거야. 다시 한 번 골라봐!");
+    }
+  }
+
+  /* ---------- 색종이(confetti) ---------- */
+  var cvs=document.getElementById('confetti'), ctx=cvs.getContext('2d'), parts=[];
+  function resize(){ cvs.width=innerWidth; cvs.height=innerHeight; }
+  resize(); addEventListener('resize',resize);
+  var COLORS=['#FF4E86','#FF9F1C','#8A63D2','#17C3A2','#38B6FF','#FFD166'];
+  function burst(){
+    if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+    for(var i=0;i<90;i++){
+      parts.push({x:innerWidth/2+(Math.random()-.5)*120, y:innerHeight*0.42,
+        vx:(Math.random()-.5)*11, vy:Math.random()*-13-4,
+        s:Math.random()*8+5, c:COLORS[i%COLORS.length], r:Math.random()*6, vr:(Math.random()-.5)*.4});
+    }
+    if(!raf) loop();
+  }
+  var raf=null;
+  function loop(){
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    for(var i=parts.length-1;i>=0;i--){
+      var p=parts[i];
+      p.vy+=0.4; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+      ctx.fillStyle=p.c; ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6); ctx.restore();
+      if(p.y>cvs.height+40) parts.splice(i,1);
+    }
+    if(parts.length){ raf=requestAnimationFrame(loop); } else { raf=null; ctx.clearRect(0,0,cvs.width,cvs.height); }
+  }
+
+  /* ---------- 네비게이션 ---------- */
+  var stages=document.querySelectorAll('.stage');
+  var dotsBox=document.getElementById('dots');
+  for(var d=1;d<=5;d++){ var el=document.createElement('div'); el.className='dot'; el.dataset.i=d; dotsBox.appendChild(el); }
+  var dotEls=dotsBox.querySelectorAll('.dot');
+
+  var nav=document.getElementById('nav');
+  var nextBtn=document.getElementById('nextBtn');
+  var prevBtn=document.getElementById('prevBtn');
+
+  function go(n){
+    stopSpeak();
+    n=Math.max(0,Math.min(TOTAL,n));
+    cur=n;
+    stages.forEach(function(s){ s.classList.toggle('show', +s.dataset.stage===n); });
+    // 진행 점
+    dotEls.forEach(function(dt){
+      var i=+dt.dataset.i;
+      dt.classList.toggle('on', i===n);
+      dt.classList.toggle('done', i<n && n<=5);
+    });
+    // 네비 표시
+    nav.style.display = (n>=1 && n<=5) ? 'flex' : 'none';
+    prevBtn.style.visibility = (n===1)?'hidden':'visible';
+    nextBtn.textContent = (n===5)?'끝내기 🏁':'다음 ▶';
+    if(n===6){ nav.style.display='none'; document.getElementById('scoreLine').textContent='3문제 중 '+score+'개 정답! 참 잘했어요 🌟'; burst(); }
+    window.scrollTo({top:0,behavior:'smooth'});
+    renderStage(n);
+    // 스테이지 진입 시 자동 설명(소리 켜져 있을 때)
+    if(soundOn && n>=1 && n<=5){
+      var key='s'+n;
+      setTimeout(function(){ speak(key); }, 400);
+    }
+  }
+
+  nextBtn.addEventListener('click',function(){ go(cur+1); });
+  prevBtn.addEventListener('click',function(){ go(cur-1); });
+
+  // 시작 버튼 & 나레이션 재생 버튼들
+  document.querySelectorAll('.play').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      soundOn=true; updateSoundIcon();
+      var key=btn.dataset.say;
+      if(key==='greet'){ speak('greet',btn); go(1); }
+      else speak(key,btn);
+    });
+  });
+
+  document.getElementById('btnAgain').addEventListener('click',function(){ go(0); });
+
+  // 소리 토글
+  var soundToggle=document.getElementById('soundToggle');
+  function updateSoundIcon(){ soundToggle.textContent = soundOn?'🔊':'🔇'; }
+  soundToggle.addEventListener('click',function(){
+    soundOn=!soundOn; updateSoundIcon();
+    if(!soundOn) stopSpeak();
+  });
+
+  // 페이지 떠날 때 음성 정리
+  addEventListener('pagehide',stopSpeak);
+})();
+</script>
